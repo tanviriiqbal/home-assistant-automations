@@ -1,0 +1,239 @@
+automation:
+- alias: Office - Scene Controller - Button 5 - Press
+  description: ''
+  triggers:
+  - event_type: zwave_js_value_notification
+    event_data:
+      device_id: '{{device_id}}
+
+        '
+      property_key: '{{property_key}}
+
+        '
+      value: KeyPressed
+    id: Trigger_Press_1x
+    trigger: event
+    alias: Press 1x
+  - alias: Press 2x
+    event_type: zwave_js_value_notification
+    event_data:
+      device_id: '{{device_id}}
+
+        '
+      property_key: '{{property_key}}
+
+        '
+      value: KeyPressed2x
+    id: Trigger_Press_2x
+    trigger: event
+  - alias: Press 3x
+    event_type: zwave_js_value_notification
+    event_data:
+      device_id: '{{device_id}}
+
+        '
+      property_key: '{{property_key}}
+
+        '
+      value: KeyPressed3x
+    id: Trigger_Press_3x
+    trigger: event
+  - alias: Press 4x
+    event_type: zwave_js_value_notification
+    event_data:
+      device_id: '{{device_id}}
+
+        '
+      property_key: '{{property_key}}
+
+        '
+      value: KeyPressed4x
+    id: Trigger_Press_4x
+    trigger: event
+  - event_type: zwave_js_value_notification
+    event_data:
+      device_id: '{{device_id}}
+
+        '
+      property_key: '{{property_key}}
+
+        '
+      value: KeyPressed5x
+    id: Trigger_Press_5x
+    trigger: event
+    alias: Press 5x
+    enabled: false
+  - event_type: zwave_js_value_notification
+    event_data:
+      device_id: '{{device_id}}
+
+        '
+      property_key: '{{property_key}}
+
+        '
+      value: KeyHeldDown
+    id: Trigger_Press_Hold
+    trigger: event
+    alias: Press Hold
+  - event_type: zwave_js_value_notification
+    event_data:
+      device_id: '{{device_id}}
+
+        '
+      property_key: '{{property_key}}
+
+        '
+      value: KeyReleased
+    id: Trigger_Press_Release
+    trigger: event
+    alias: Press Release
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id:
+        - Trigger_Press_1x
+      - condition: template
+        value_template: '{{ is_state(light_source, ''on'') }}'
+      sequence:
+      - action: scene.create
+        metadata: {}
+        data:
+          scene_id: '{{device_id}}_{{button_name}}_last_on
+
+            '
+          snapshot_entities: '{{ expand(light_source) | map(attribute=''entity_id'')
+            | list }}
+
+            '
+      - action: input_select.select_first
+        metadata: {}
+        data: {}
+        target:
+          entity_id: 'input_select.{{device_id}}_{{button_name}}_scene_input
+
+            '
+      - target:
+          entity_id: '{{light_source}}
+
+            '
+        data: {}
+        action: light.turn_off
+      alias: Press 1X - 1 - Turn Off
+    - conditions:
+      - condition: trigger
+        id:
+        - Trigger_Press_1x
+      - condition: template
+        value_template: '{{ is_state(light_source, ''off'') }}'
+      sequence:
+      - action: scene.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: 'scene.{{device_id}}_{{button_name}}_{{ states(''input_select.''~device_id~''_''~button_name~''_scene_input'')
+            | lower | replace(" ", "_") }}
+
+            '
+      alias: Press 1X - 2 - Turn On
+    - conditions:
+      - condition: trigger
+        id:
+        - Trigger_Press_2x
+      sequence:
+      - action: input_select.select_next
+        metadata: {}
+        data:
+          cycle: true
+        target:
+          entity_id: 'input_select.{{device_id}}_{{button_name}}_scene_input
+
+            '
+      alias: Press 2X
+    - conditions:
+      - condition: trigger
+        id:
+        - Trigger_Press_3x
+      sequence:
+      - action: scene.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: 'scene.{{device_id}}_{{button_name}}_default
+
+            '
+      - action: adaptive_lighting.apply
+        metadata: {}
+        data:
+          entity_id: 'switch.adaptive_lighting_{{area_name}}
+
+            '
+      alias: Press 3X
+    - conditions:
+      - condition: trigger
+        id:
+        - Trigger_Press_4x
+      sequence:
+      - action: input_boolean.toggle
+        metadata: {}
+        data: {}
+        target:
+          entity_id: input_boolean.adaptive_lighting_prefer_rgb_color_{{area_name}}
+      - action: persistent_notification.create
+        metadata: {}
+        data:
+          title: zwave area
+          message: 'Device {{ trigger.event.data.device_id }} is in area ID: {{area_name
+            }}'
+        enabled: false
+      alias: Press 4X
+    - conditions:
+      - condition: trigger
+        id:
+        - Trigger_Press_5x
+      sequence: []
+      alias: Press 5X - 1 - State ON
+    - conditions:
+      - condition: trigger
+        id:
+        - Trigger_Press_Hold
+      sequence:
+      - action: automation.toggle
+        target:
+          entity_id: 'automation.{{area_name}}_motion_sensor
+
+            '
+        data: {}
+      alias: Press Hold - Automatic Lights Toggle
+    - conditions:
+      - condition: trigger
+        id:
+        - Trigger_Press_Release
+      sequence:
+      - if:
+        - condition: state
+          entity_id: light.office_group_all_lights
+          state: 'off'
+        then:
+        - action: switch.turn_off
+          target:
+            entity_id:
+            - switch.zen32_scene_controller_d966bfe5eaa4645f72ff45022220e12d_button_1_indication_binary
+          data: {}
+        enabled: false
+      alias: Press Hold - 2 - Release
+    enabled: true
+  trigger_variables:
+    device_id: d966bfe5eaa4645f72ff45022220e12d
+    button_number: 5
+    property_key: '{{ ''00'' ~ button_number }}'
+    light_source: light.office_group_all_lights
+  variables:
+    room: office
+    area_name: '{{ area_name(trigger.event.data.device_id) | lower | replace('' '',
+      ''_'') }}'
+    button_name: '{{ ''button_'' ~ button_number }}'
+  mode: single
+  '#id': '1712427798099'
+  enabled: false

@@ -1,0 +1,74 @@
+automation:
+- alias: Kitchen Sink Motion Sensor
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.kitchen_sink_motion_sensor_home_security_motion_detection
+    from: 'off'
+    to: 'on'
+    id: MotionON
+  - platform: state
+    entity_id:
+    - binary_sensor.kitchen_sink_motion_sensor_home_security_motion_detection
+    from: 'on'
+    to: 'off'
+    id: MotionIdle
+  - platform: state
+    entity_id:
+    - binary_sensor.kitchen_sink_motion_sensor_home_security_motion_detection
+    from: 'on'
+    to: 'off'
+    id: MotionClear
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 20
+  condition: []
+  action:
+  - if:
+    - condition: trigger
+      id: MotionON
+    then:
+    - service: light.turn_on
+      data:
+        color_temp: 389
+        brightness_pct: 98
+      target:
+        entity_id:
+        - light.kitchen_sink
+    enabled: false
+  - if:
+    - condition: trigger
+      id: MotionIdle
+    then:
+    - service: light.turn_on
+      data:
+        brightness_pct: 50
+        transition: 3
+      target:
+        entity_id:
+        - light.kitchen_sink
+  - if:
+    - condition: trigger
+      id: MotionClear
+    then:
+    - service: light.turn_off
+      data:
+        transition: 10
+      target:
+        entity_id:
+        - light.kitchen_sink
+  - if:
+    - condition: trigger
+      id: MotionON
+    then:
+    - service: light.turn_on
+      data:
+        brightness_pct: 98
+      target:
+        entity_id:
+        - light.kitchen_sink
+  mode: single
+  '#id': '1689310294105'
+  enabled: false
