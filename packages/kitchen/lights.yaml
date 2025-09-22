@@ -5,7 +5,7 @@ automation:
   - platform: state
     entity_id:
     - binary_sensor.kitchen_sink_motion_sensor_home_security_motion_detection
-    from: 'off' #test
+    from: 'off' #test for second repo
     to: 'on'
     id: MotionON
   - platform: state
