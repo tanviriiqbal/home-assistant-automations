@@ -380,22 +380,24 @@ automation:
 
         '
     enabled: false
+  - action: scene.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: 'scene.{{device_id}}_{{button_name}}_{{ states(''input_select.''~device_id~''_''~button_name~''_scene_input'')
+        | lower | replace(" ", "_") }}
+
+        '
+    enabled: true
+    alias: Acticate current scene in Scene Selector
   - if:
     - condition: template
       value_template: '{{ states(''input_select.'' + device_id + ''_button_5_scene_input'')
         == ''Adaptive Lighting Reset'' }}
 
         '
+      alias: Scene Selector value == Adaptive Lighting Reset
     then:
-    - action: scene.turn_on
-      metadata: {}
-      data: {}
-      target:
-        entity_id: 'scene.{{device_id}}_{{button_name}}_{{ states(''input_select.''~device_id~''_''~button_name~''_scene_input'')
-          | lower | replace(" ", "_") }}
-
-          '
-      enabled: true
     - delay:
         hours: 0
         minutes: 0
@@ -405,16 +407,7 @@ automation:
       metadata: {}
       data:
         entity_id: switch.adaptive_lighting_{{area_name}}
-    else:
-    - action: scene.turn_on
-      metadata: {}
-      data: {}
-      target:
-        entity_id: 'scene.{{device_id}}_{{button_name}}_{{ states(''input_select.''~device_id~''_''~button_name~''_scene_input'')
-          | lower | replace(" ", "_") }}
-
-          '
-      enabled: true
+      alias: Apply Adaptive Lighting Settings to current Area
   variables:
     device_id: d966bfe5eaa4645f72ff45022220e12d
     button_name: button_5
