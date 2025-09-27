@@ -1,0 +1,61 @@
+automation:
+- alias: Adaptive Lighting - Toggle Prefer RGB Color
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - input_boolean.adaptive_lighting_prefer_rgb_color_office
+    - input_boolean.adaptive_lighting_prefer_rgb_color_living_room
+    id: toggle_changed
+  - trigger: state
+    entity_id:
+    - switch.adaptive_lighting_office
+    - switch.adaptive_lighting_living_room
+    id: adaptive_changed
+    attribute: configuration
+  conditions: []
+  actions:
+  - action: persistent_notification.create
+    metadata: {}
+    data:
+      title: Area test
+      message: 'The entity {{trigger.entity_id}} belongs to area: {{ area_name}} to
+        state {{ trigger.to_state.state }}'
+    enabled: false
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: toggle_changed
+      - condition: template
+        value_template: "{{ state_attr('switch.adaptive_lighting_'~area_name, 'configuration')['prefer_rgb_color']\
+          \ !=\n   (is_state('input_boolean.adaptive_lighting_prefer_rgb_color_'~area_name,\
+          \ 'on')) }}\n"
+        alias: Prefer_RGB_Color != Input boolean
+      sequence:
+      - action: adaptive_lighting.change_switch_settings
+        metadata: {}
+        data:
+          entity_id: switch.adaptive_lighting_{{area_name}}
+          prefer_rgb_color: '{{ is_state(''input_boolean.adaptive_lighting_prefer_rgb_color_''~area_name,
+            ''on'') }}
+
+            '
+        alias: Set Prefer_RGB_Color to Input boolean
+    - conditions:
+      - condition: trigger
+        id: adaptive_changed
+      - condition: template
+        value_template: "{{ (is_state('input_boolean.adaptive_lighting_prefer_rgb_color_'~area_name,\
+          \ 'on')) !=\n   state_attr('switch.adaptive_lighting_'~area_name, 'configuration')['prefer_rgb_color']\
+          \ }}\n"
+        alias: Prefer_RGB_Color != Input Boolean
+      sequence:
+      - action: input_boolean.toggle
+        target:
+          entity_id: input_boolean.adaptive_lighting_prefer_rgb_color_{{area_name}}
+        data: {}
+  variables:
+    area_name: '{{ area_name(trigger.entity_id) | lower | replace('' '', ''_'') }}'
+  mode: single
+  '#id': '1757990113548'
+  enabled: false
